@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+.growth-engine/
+dist/
+build/
+*** Add File: src/growth_engine/__init__.py
+"""Policy-compliant content intelligence."""
+
+__version__ = "0.1.0"
