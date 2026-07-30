@@ -4,13 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-content-growth-engine"
-version = "0.1.0"
+version = "0.2.0"
 description = "Policy-compliant content intelligence CLI"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "AI Content Growth Engine contributors" }]
-dependencies = []
+dependencies = [
+  "google-api-python-client>=2.140,<3",
+  "google-auth>=2.30,<3",
+  "google-auth-oauthlib>=1.2,<2",
+]
 
 [project.optional-dependencies]
 dev = [

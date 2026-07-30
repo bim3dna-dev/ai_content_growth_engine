@@ -26,7 +26,7 @@ def stable_id(prefix: str, payload: object) -> str:
     return f"{prefix}_{digest}"
 
 
-def _write_json_atomic(path: Path, value: object) -> None:
+def write_text_atomic(path: Path, value: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(
         dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
@@ -34,13 +34,38 @@ def _write_json_atomic(path: Path, value: object) -> None:
     temporary_path = Path(temporary_name)
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
-            json.dump(value, stream, indent=2, ensure_ascii=False)
-            stream.write("\n")
+            stream.write(value)
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary_path, path)
     finally:
         temporary_path.unlink(missing_ok=True)
+
+
+def write_json_atomic(path: Path, value: object) -> None:
+    serialized = json.dumps(value, indent=2, ensure_ascii=False) + "\n"
+    write_text_atomic(path, serialized)
+
+
+_SENSITIVE_KEY_PARTS = ("secret", "token", "password", "authorization_code", "api_key")
+
+
+def redact(value: object) -> object:
+    """Recursively redact sensitive values before logging or display."""
+    if isinstance(value, dict):
+        return {
+            str(key): (
+                "[REDACTED]"
+                if any(part in str(key).lower() for part in _SENSITIVE_KEY_PARTS)
+                else redact(item)
+            )
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [redact(item) for item in value]
+    if isinstance(value, tuple):
+        return [redact(item) for item in value]
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,7 +102,7 @@ class Workspace:
             "logs",
         ):
             (self.data_dir / relative).mkdir(parents=True, exist_ok=True)
-        _write_json_atomic(self.config_path, config)
+        write_json_atomic(self.config_path, config)
         self.audit(
             "workspace_initialized",
             {"creator": config["creator"], "niche": config["niche"]},
@@ -104,7 +129,17 @@ class Workspace:
     def write_artifact(self, category: str, artifact_id: str, value: object) -> Path:
         path = self.data_dir / category / f"{artifact_id}.json"
         if not path.exists():
-            _write_json_atomic(path, value)
+            write_json_atomic(path, value)
+        return path
+
+    def write_json(self, relative: str, value: object) -> Path:
+        path = self.data_dir / relative
+        write_json_atomic(path, value)
+        return path
+
+    def write_text(self, relative: str, value: str) -> Path:
+        path = self.data_dir / relative
+        write_text_atomic(path, value)
         return path
 
     def artifacts(self, category: str) -> list[dict[str, Any]]:
@@ -139,6 +174,6 @@ class Workspace:
     def audit(self, event: str, details: dict[str, Any]) -> None:
         path = self.data_dir / "logs" / "audit.jsonl"
         path.parent.mkdir(parents=True, exist_ok=True)
-        record = {"at": utc_now(), "event": event, "details": details}
+        record = {"at": utc_now(), "event": event, "details": redact(details)}
         with path.open("a", encoding="utf-8", newline="\n") as stream:
             stream.write(json.dumps(record, sort_keys=True, ensure_ascii=False) + "\n")

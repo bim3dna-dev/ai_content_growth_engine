@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "id": "video-a",
+      "snippet": {
+        "channelId": "UC_fixture_owner",
+        "title": "Art in Public Space",
+        "description": "A practical case study.",
+        "publishedAt": "2026-01-05T12:00:00Z",
+        "thumbnails": {"default": {"url": "https://example.invalid/a.jpg"}},
+        "tags": ["art", "public-space"],
+        "categoryId": "27",
+        "defaultLanguage": "en",
+        "defaultAudioLanguage": "en",
+        "liveBroadcastContent": "none"
+      },
+      "contentDetails": {"duration": "PT8M30S"},
+      "status": {
+        "privacyStatus": "public",
+        "uploadStatus": "processed",
+        "madeForKids": false,
+        "selfDeclaredMadeForKids": false
+      },
+      "statistics": {
+        "viewCount": "10000",
+        "likeCount": "800",
+        "commentCount": "90"
+      }
+    },
+    {
+      "id": "video-b",
+      "snippet": {
+        "channelId": "UC_fixture_owner",
+        "title": "Activist Posters",
+        "description": "Design history.",
+        "publishedAt": "2026-01-12T12:00:00Z",
+        "thumbnails": {"default": {"url": "https://example.invalid/b.jpg"}},
+        "categoryId": "27",
+        "liveBroadcastContent": "none"
+      },
+      "contentDetails": {"duration": "PT1H2M3S"},
+      "status": {"privacyStatus": "unlisted", "uploadStatus": "processed"},
+      "statistics": {"viewCount": "2500"}
+    }
+  ]
+}

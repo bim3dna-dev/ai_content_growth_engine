@@ -19,6 +19,12 @@ class Action(StrEnum):
     ARTIFICIAL_TRAFFIC = "artificial_traffic"
     BYPASS_PROTECTION = "bypass_protection"
     MANIPULATE_METRICS = "manipulate_metrics"
+    PLATFORM_WRITE = "platform_write"
+    VIDEO_UPLOAD = "video_upload"
+    METADATA_UPDATE = "metadata_update"
+    COMMENT_WRITE = "comment_write"
+    RATING_WRITE = "rating_write"
+    SUBSCRIPTION_WRITE = "subscription_write"
 
 
 MILESTONE_1_ALLOWED = frozenset(
@@ -32,6 +38,12 @@ ALWAYS_PROHIBITED = frozenset(
         Action.ARTIFICIAL_TRAFFIC,
         Action.BYPASS_PROTECTION,
         Action.MANIPULATE_METRICS,
+        Action.PLATFORM_WRITE,
+        Action.VIDEO_UPLOAD,
+        Action.METADATA_UPDATE,
+        Action.COMMENT_WRITE,
+        Action.RATING_WRITE,
+        Action.SUBSCRIPTION_WRITE,
     }
 )
 

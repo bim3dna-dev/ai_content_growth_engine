@@ -1,5 +1,6 @@
 import pytest
 
+from growth_engine.models import WorkflowState, require_transition
 from growth_engine.policy import Action, PolicyViolation, authorize
 
 
@@ -23,3 +24,9 @@ def test_platform_read_requires_official_api() -> None:
     with pytest.raises(PolicyViolation, match="official API"):
         authorize(Action.OFFICIAL_API_READ)
     authorize(Action.OFFICIAL_API_READ, official_api=True)
+
+
+def test_workflow_state_transitions_are_explicitly_enforced() -> None:
+    require_transition(WorkflowState.COLLECTED, WorkflowState.GENERATED)
+    with pytest.raises(ValueError, match="collected -> ranked"):
+        require_transition(WorkflowState.COLLECTED, WorkflowState.RANKED)

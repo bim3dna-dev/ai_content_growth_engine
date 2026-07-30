@@ -1,0 +1,22 @@
+{
+  "kind": "youtubeAnalytics#resultTable",
+  "columnHeaders": [
+    {"name": "video", "columnType": "DIMENSION", "dataType": "STRING"},
+    {"name": "views", "columnType": "METRIC", "dataType": "INTEGER"},
+    {"name": "estimatedMinutesWatched", "columnType": "METRIC", "dataType": "INTEGER"},
+    {"name": "averageViewDuration", "columnType": "METRIC", "dataType": "INTEGER"},
+    {"name": "averageViewPercentage", "columnType": "METRIC", "dataType": "FLOAT"},
+    {"name": "subscribersGained", "columnType": "METRIC", "dataType": "INTEGER"},
+    {"name": "subscribersLost", "columnType": "METRIC", "dataType": "INTEGER"},
+    {"name": "likes", "columnType": "METRIC", "dataType": "INTEGER"},
+    {"name": "comments", "columnType": "METRIC", "dataType": "INTEGER"},
+    {"name": "shares", "columnType": "METRIC", "dataType": "INTEGER"},
+    {"name": "videoThumbnailImpressions", "columnType": "METRIC", "dataType": "INTEGER"},
+    {"name": "videoThumbnailImpressionsClickRate", "columnType": "METRIC", "dataType": "FLOAT"}
+  ],
+  "rows": [
+    ["video-a", 8000, 48000, 360, 70.6, 100, 5, 700, 80, 120, 90000, 6.4],
+    ["video-b", 2000, 5000, 150, 38.0, 8, 3, 90, 4, 5, 30000, 1.7],
+    ["video-c", 200, 900, 270, 65.0, 1, 1, 30, 8, 12, 500, 5.5]
+  ]
+}

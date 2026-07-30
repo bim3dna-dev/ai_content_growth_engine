@@ -5,7 +5,13 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .venv/
+.env
+/client_secrets*.json
+/credentials/
+/tokens/
 .growth-engine/
+.runtime/*
+!.runtime/.gitkeep
 dist/
 build/
 *** Add File: src/growth_engine/__init__.py

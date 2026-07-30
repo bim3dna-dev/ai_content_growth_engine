@@ -1,0 +1,28 @@
+{
+  "kind": "youtube#channelListResponse",
+  "items": [
+    {
+      "id": "UC_fixture_owner",
+      "snippet": {
+        "title": "Art Forever",
+        "description": "Art and social change.",
+        "customUrl": "@artforever",
+        "publishedAt": "2020-01-02T03:04:05Z",
+        "country": "HU",
+        "thumbnails": {
+          "default": {"url": "https://example.invalid/channel.jpg"}
+        }
+      },
+      "statistics": {
+        "viewCount": "90000",
+        "subscriberCount": "4200",
+        "hiddenSubscriberCount": false,
+        "videoCount": "3"
+      },
+      "contentDetails": {
+        "relatedPlaylists": {"uploads": "UU_fixture_uploads"}
+      },
+      "status": {"privacyStatus": "public"}
+    }
+  ]
+}

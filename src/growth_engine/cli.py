@@ -12,7 +12,6 @@ from typing import Any, NoReturn
 
 from growth_engine import __version__
 from growth_engine.models import Platform
-from growth_engine.policy import PolicyViolation
 from growth_engine.services import (
     conduct_research,
     create_brief,
@@ -21,6 +20,17 @@ from growth_engine.services import (
     rank_ideas,
 )
 from growth_engine.storage import Workspace, WorkspaceError
+from growth_engine.youtube.intelligence import analyze_performance, diagnose_content
+from growth_engine.youtube.reporting import generate_youtube_report
+from growth_engine.youtube.sync import (
+    authorize_youtube,
+    configure_youtube,
+    sync_all,
+    sync_analytics,
+    sync_channel,
+    sync_videos,
+    youtube_status,
+)
 
 
 class CliError(RuntimeError):
@@ -83,6 +93,66 @@ def build_parser() -> argparse.ArgumentParser:
     daily = report_commands.add_parser("daily", help="Create a local daily pipeline report")
     daily.add_argument("--date", default=date.today().isoformat(), dest="report_date")
     _add_common(daily)
+
+    youtube = commands.add_parser("youtube", help="Read-only official YouTube integration")
+    youtube_commands = youtube.add_subparsers(dest="youtube_command", required=True)
+    configure = youtube_commands.add_parser(
+        "configure", help="Configure an installed-app OAuth client reference"
+    )
+    configure.add_argument("--client-secrets", type=Path, required=True)
+    configure.add_argument("--channel-alias", required=True)
+    _add_common(configure)
+    auth = youtube_commands.add_parser("auth", help="Authorize read-only YouTube access")
+    auth.add_argument("--channel", required=True)
+    _add_common(auth)
+    status = youtube_commands.add_parser("status", help="Check authorization and channel identity")
+    status.add_argument("--channel", required=True)
+    _add_common(status)
+    sync = youtube_commands.add_parser("sync", help="Synchronize official YouTube data")
+    sync_commands = sync.add_subparsers(dest="sync_command", required=True)
+    sync_channel_parser = sync_commands.add_parser("channel", help="Synchronize channel metadata")
+    sync_channel_parser.add_argument("--channel", required=True)
+    _add_common(sync_channel_parser)
+    sync_videos_parser = sync_commands.add_parser("videos", help="Synchronize uploaded videos")
+    sync_videos_parser.add_argument("--channel", required=True)
+    sync_videos_parser.add_argument("--max-items", type=int, default=100)
+    _add_common(sync_videos_parser)
+    sync_analytics_parser = sync_commands.add_parser(
+        "analytics", help="Synchronize owner-authorized analytics"
+    )
+    sync_analytics_parser.add_argument("--channel", required=True)
+    sync_analytics_parser.add_argument("--start-date", required=True)
+    sync_analytics_parser.add_argument("--end-date", required=True)
+    _add_common(sync_analytics_parser)
+    sync_all_parser = sync_commands.add_parser("all", help="Run the complete read-only sync")
+    sync_all_parser.add_argument("--channel", required=True)
+    sync_all_parser.add_argument("--start-date", required=True)
+    sync_all_parser.add_argument("--end-date", required=True)
+    sync_all_parser.add_argument("--max-items", type=int, default=100)
+    _add_common(sync_all_parser)
+
+    analytics = commands.add_parser(
+        "analytics", help="Local deterministic performance intelligence"
+    )
+    analytics_commands = analytics.add_subparsers(dest="analytics_command", required=True)
+    analyze = analytics_commands.add_parser("analyze", help="Calculate local performance metrics")
+    analyze.add_argument("--channel", required=True)
+    analyze.add_argument("--start-date", required=True)
+    analyze.add_argument("--end-date", required=True)
+    _add_common(analyze)
+    diagnose = analytics_commands.add_parser("diagnose", help="Run rule-based local diagnoses")
+    diagnose.add_argument("--channel", required=True)
+    diagnose.add_argument("--start-date", required=True)
+    diagnose.add_argument("--end-date", required=True)
+    _add_common(diagnose)
+
+    youtube_report = report_commands.add_parser(
+        "youtube", help="Generate JSON and Markdown YouTube reports"
+    )
+    youtube_report.add_argument("--channel", required=True)
+    youtube_report.add_argument("--start-date", required=True)
+    youtube_report.add_argument("--end-date", required=True)
+    _add_common(youtube_report)
     return parser
 
 
@@ -160,15 +230,94 @@ def run(argv: Sequence[str] | None = None) -> int:
         result = create_daily_report(
             workspace, _parse_date(args.report_date), dry_run=args.dry_run
         )
+    elif args.command == "youtube" and args.youtube_command == "configure":
+        result = configure_youtube(
+            workspace,
+            args.channel_alias,
+            args.client_secrets,
+            dry_run=args.dry_run,
+        )
+    elif args.command == "youtube" and args.youtube_command == "auth":
+        result = authorize_youtube(workspace, args.channel, dry_run=args.dry_run)
+    elif args.command == "youtube" and args.youtube_command == "status":
+        result = youtube_status(workspace, args.channel)
+    elif (
+        args.command == "youtube"
+        and args.youtube_command == "sync"
+        and args.sync_command == "channel"
+    ):
+        result = sync_channel(workspace, args.channel, dry_run=args.dry_run)
+    elif (
+        args.command == "youtube"
+        and args.youtube_command == "sync"
+        and args.sync_command == "videos"
+    ):
+        result = sync_videos(
+            workspace, args.channel, args.max_items, dry_run=args.dry_run
+        )
+    elif (
+        args.command == "youtube"
+        and args.youtube_command == "sync"
+        and args.sync_command == "analytics"
+    ):
+        result = sync_analytics(
+            workspace,
+            args.channel,
+            args.start_date,
+            args.end_date,
+            dry_run=args.dry_run,
+        )
+    elif (
+        args.command == "youtube"
+        and args.youtube_command == "sync"
+        and args.sync_command == "all"
+    ):
+        result = sync_all(
+            workspace,
+            args.channel,
+            args.start_date,
+            args.end_date,
+            args.max_items,
+            dry_run=args.dry_run,
+        )
+    elif args.command == "analytics" and args.analytics_command == "analyze":
+        result = analyze_performance(
+            workspace,
+            args.channel,
+            args.start_date,
+            args.end_date,
+            dry_run=args.dry_run,
+        )
+    elif args.command == "analytics" and args.analytics_command == "diagnose":
+        result = diagnose_content(
+            workspace,
+            args.channel,
+            args.start_date,
+            args.end_date,
+            dry_run=args.dry_run,
+        )
+    elif args.command == "report" and args.report_command == "youtube":
+        result = generate_youtube_report(
+            workspace,
+            args.channel,
+            args.start_date,
+            args.end_date,
+            dry_run=args.dry_run,
+        )
     else:
         raise CliError("Unknown command.")
     _print_result(result, as_json=args.as_json, dry_run=args.dry_run)
-    return 0
+    return (
+        1
+        if result.get("state")
+        in {"failed", "partially_succeeded", "blocked_by_policy", "not_authorized"}
+        else 0
+    )
 
 
 def entrypoint() -> NoReturn:
     try:
         raise SystemExit(run())
-    except (CliError, PolicyViolation, WorkspaceError, ValueError) as exc:
+    except (CliError, WorkspaceError, ValueError, RuntimeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
